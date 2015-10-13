@@ -1,3 +1,7 @@
+## 1.0.2 (Oct 12, 2015)
+- When a buffer has changed put a Yes/No/Cancel prompt instead
+  of an error message
+
 ## 1.0.1 (Jul 23, 2013)
 - Fixes `:Bdelete`ing via buffer number. Finally, perfect!
 
