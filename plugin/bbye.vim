@@ -16,6 +16,7 @@ function! s:bdelete(bang, buffer_name)
         echohl None
         let c = getchar()
         redraw
+        echo ' '
         if c == 13 || c == 121
             w!
         elseif c == 110
