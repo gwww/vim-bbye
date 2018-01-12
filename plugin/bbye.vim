@@ -2,17 +2,17 @@ if exists("g:loaded_bbye") || &cp | finish | endif
 let g:loaded_bbye = 1
 
 function! s:bdelete(bang, buffer_name)
-	let buffer = s:str2bufnr(a:buffer_name)
-	let w:bbye_back = 1
+    let buffer = s:str2bufnr(a:buffer_name)
+    let w:bbye_back = 1
 
-	if buffer < 0
-		return s:warn("E516: No buffers were deleted. No match for ".a:buffer_name)
-	endif
+    if buffer < 0
+        return s:warn("E516: No buffers were deleted. No match for ".a:buffer_name)
+    endif
 
     let bang = a:bang
     if getbufvar(buffer, "&modified") && empty(bang)
         echohl WarningMsg
-        echo 'Save "' . @% . '" ([Y]es / (N)o / (C)ancel)? '
+        echo '"' . @% . '" changed. Save [Yes/No/Cancel]? '
         echohl None
         let c = getchar()
         redraw
