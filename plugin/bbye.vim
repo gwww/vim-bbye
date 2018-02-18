@@ -12,7 +12,12 @@ function! s:bdelete(bang, buffer_name)
     let bang = a:bang
     if getbufvar(buffer, "&modified") && empty(bang)
         echohl WarningMsg
-        echo '"' . @% . '" changed. Save [Yes/No/Cancel]? '
+        if @% == ''
+          let buffname = 'Buffer'
+        else
+          let buffname = '"' . @% . '"'
+        endif
+        echo buffname 'changed. Save [Yes/No/Cancel]? '
         echohl None
         let c = getchar()
         redraw
