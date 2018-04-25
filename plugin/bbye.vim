@@ -13,89 +13,89 @@ function! s:bdelete(bang, buffer_name)
     if getbufvar(buffer, "&modified") && empty(bang)
         echohl WarningMsg
         if @% == ''
-          let buffname = 'Buffer'
+            let buffname = 'Buffer'
         else
-          let buffname = '"' . @% . '"'
+            let buffname = '"' . @% . '"'
         endif
-        echo buffname 'changed. Save [Yes/No/Cancel]? '
+        echo buffname 'has changes. Save [Y]es [N]o [C]ancel? '
         echohl None
-        let c = getchar()
+        let answer = nr2char(getchar())
         redraw
         echo ' '
-        if c == 13 || c == 121
+        if answer == 'y'
             w!
-        elseif c == 110
+        elseif answer == 'n'
             let bang = '!'
         else
             return 0
         endif
     endif
 
-	" If the buffer is set to delete and it contains changes, we can't switch
-	" away from it. Hide it before eventual deleting:
-	if getbufvar(buffer, "&modified") && !empty(bang)
-		call setbufvar(buffer, "&bufhidden", "hide")
-	endif
+    " If the buffer is set to delete and it contains changes, we can't switch
+    " away from it. Hide it before eventual deleting:
+    if getbufvar(buffer, "&modified") && !empty(bang)
+        call setbufvar(buffer, "&bufhidden", "hide")
+    endif
 
-	" For cases where adding buffers causes new windows to appear or hiding some
-	" causes windows to disappear and thereby decrement, loop backwards.
-	for window in reverse(range(1, winnr("$")))
-		" For invalid window numbers, winbufnr returns -1.
-		if winbufnr(window) != buffer | continue | endif
-		execute window . "wincmd w"
+    " For cases where adding buffers causes new windows to appear or hiding some
+    " causes windows to disappear and thereby decrement, loop backwards.
+    for window in reverse(range(1, winnr("$")))
+        " For invalid window numbers, winbufnr returns -1.
+        if winbufnr(window) != buffer | continue | endif
+        execute window . "wincmd w"
 
-		" Bprevious also wraps around the buffer list, if necessary:
-		try | exe bufnr("#") > 0 && buflisted(bufnr("#")) ? "buffer #" : "bprevious"
-		catch /^Vim([^)]*):E85:/ " E85: There is no listed buffer
-		endtry
+        " Bprevious also wraps around the buffer list, if necessary:
+        try | exe bufnr("#") > 0 && buflisted(bufnr("#")) ? "buffer #" : "bprevious"
+        catch /^Vim([^)]*):E85:/ " E85: There is no listed buffer
+        endtry
 
-		" If found a new buffer for this window, mission accomplished:
-		if bufnr("%") != buffer | continue | endif
+        " If found a new buffer for this window, mission accomplished:
+        if bufnr("%") != buffer | continue | endif
 
-		call s:new(bang)
-	endfor
+        call s:new(bang)
+    endfor
 
-	" Because tabbars and other appearing/disappearing windows change
-	" the window numbers, find where we were manually:
-	let back = filter(range(1, winnr("$")), "getwinvar(v:val, 'bbye_back')")[0]
-	if back | exe back . "wincmd w" | unlet w:bbye_back | endif
+    " Because tabbars and other appearing/disappearing windows change
+    " the window numbers, find where we were manually:
+    let back = filter(range(1, winnr("$")), "getwinvar(v:val, 'bbye_back')")[0]
+    if back | exe back . "wincmd w" | unlet w:bbye_back | endif
 
-	" If it hasn't been already deleted by &bufhidden, end its pains now.
-	" Unless it previously was an unnamed buffer and :enew returned it again.
-	if bufexists(buffer) && buffer != bufnr("%")
-		exe "bdelete" . bang . " " . buffer
-	endif
+    " If it hasn't been already deleted by &bufhidden, end its pains now.
+    " Unless it previously was an unnamed buffer and :enew returned it again.
+    if bufexists(buffer) && buffer != bufnr("%")
+        exe "bdelete" . bang . " " . buffer
+    endif
 endfunction
 
 function! s:str2bufnr(buffer)
-	if empty(a:buffer)
-		return bufnr("%")
-	elseif a:buffer =~ '^\d\+$'
-		return bufnr(str2nr(a:buffer))
-	else
-		return bufnr(a:buffer)
-	endif
+    if empty(a:buffer)
+        return bufnr("%")
+    elseif a:buffer =~ '^\d\+$'
+        return bufnr(str2nr(a:buffer))
+    else
+        return bufnr(a:buffer)
+    endif
 endfunction
 
 function! s:new(bang)
-	exe "enew" . a:bang
+    exe "enew" . a:bang
 
-	setl noswapfile
-	" If empty and out of sight, delete it right away:
-	setl bufhidden=wipe
-	" Regular buftype warns people if they have unsaved text there.  Wouldn't
-	" want to lose someone's data:
-	setl buftype=
-	" Hide the buffer from buffer explorers and tabbars:
-	setl nobuflisted
+    setl noswapfile
+    " If empty and out of sight, delete it right away:
+    setl bufhidden=wipe
+    " Regular buftype warns people if they have unsaved text there.  Wouldn't
+    " want to lose someone's data:
+    setl buftype=
+    " Hide the buffer from buffer explorers and tabbars:
+    setl nobuflisted
 endfunction
 
 " Using the built-in :echoerr prints a stacktrace, which isn't that nice.
 function! s:warn(msg)
-	echohl ErrorMsg
-	echomsg a:msg
-	echohl NONE
+    echohl ErrorMsg
+    echomsg a:msg
+    echohl NONE
 endfunction
 
 command! -bang -complete=buffer -nargs=? Bdelete
-	\ :call s:bdelete(<q-bang>, <q-args>)
+    \ :call s:bdelete(<q-bang>, <q-args>)
